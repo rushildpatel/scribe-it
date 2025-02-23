@@ -4,6 +4,7 @@ import Header from './components/Header'
 import FileDisplay from './components/FileDisplay';
 import Information from './components/Information';
 import Transcribing from './components/Transcribing';
+import { MessageTypes } from './utils/presets'
 
 function App() {
 	const [file, setFile] = useState(null);
@@ -56,9 +57,9 @@ function App() {
 
 		worker.current.addEventListener('message', onMessageReceived);
 		return () => {
-			worker.current.removeEventListner('message', onMessageReceived);
+			worker.current.removeEventListener('message', onMessageReceived);
 		}
-	}, []);
+	});
 
 	async function readAudioFrom(file) {
 		const sampling_rate = 16000;
@@ -75,6 +76,12 @@ function App() {
 		}
 		let audio = await readAudioFrom(file ? file : audioStream);
 		const model_name = `openai/whisper-tiny.en`;
+
+		worker.current.postMessage({
+			type: MessageTypes.INFERENCE_REQUEST,
+			audio,
+			model_name
+		})
 	}
 
   	return (
